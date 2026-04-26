@@ -222,7 +222,7 @@ async def handle_chat_completions(
                 },
             )
 
-    provider_cfg = config.get_provider(provider_name)
+    provider_cfg = config.get_provider(provider_name, strict=False)
     if provider_cfg is None:
         logger.error(
             "Provider '%s' not found in configuration", provider_name
@@ -232,6 +232,23 @@ async def handle_chat_completions(
             content={
                 "error": {
                     "message": f"Provider '{provider_name}' is missing from config"
+                }
+            },
+        )
+
+    if provider_cfg["api_key"] is None:
+        logger.warning(
+            "Request to unavailable provider '%s' (api_key not configured)",
+            provider_name,
+        )
+        return JSONResponse(
+            status_code=503,
+            content={
+                "error": {
+                    "message": (
+                        f"Provider '{provider_name}' is not available. "
+                        f"Configure its api_key in config.yaml and restart."
+                    )
                 }
             },
         )

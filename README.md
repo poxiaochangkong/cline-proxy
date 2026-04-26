@@ -28,9 +28,19 @@ Cline (base_url=http://localhost:{PORT}/v1)
 
 ## 快速开始
 
-### 1. 安装
+### 1. 创建虚拟环境并安装依赖
 
-```bash
+```powershell
+# 创建 venv
+python -m venv venv
+
+# 激活 venv
+# PowerShell:
+.\venv\Scripts\Activate.ps1
+# CMD:
+# venv\Scripts\activate.bat
+
+# 安装依赖
 pip install -r requirements.txt
 ```
 
@@ -38,9 +48,10 @@ pip install -r requirements.txt
 
 ```bash
 # 复制配置示例
-cp config.example.yaml config.yaml
-# Windows:
-# copy config.example.yaml config.yaml
+# PowerShell / CMD:
+copy config.example.yaml config.yaml
+# Linux / macOS:
+# cp config.example.yaml config.yaml
 ```
 
 编辑 `config.yaml`：
@@ -157,4 +168,5 @@ python proxy.py --port 9000        # 覆盖端口
 | `400 Unknown model` | model 未在路由表中，且未设置 default_provider | 在 `model_routing` 中添加映射 |
 | `502 Bad Gateway` | 上游 API 连接失败 | 检查网络和 api_key |
 | Cline 显示 `401 Unauthorized` | API Key 无效 | 检查环境变量或配置文件中的 key |
+| `503 Provider not available` | 该 provider 的 api_key 未配置 | 在 config.yaml 中设置对应 api_key，或删除不需要的 provider |
 | `Filtered out parameter` | 参数不在白名单中 | 将参数添加到 `allowed_params`（或确认该参数确实不需要） |

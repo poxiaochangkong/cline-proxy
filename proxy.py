@@ -38,13 +38,22 @@ def create_app(config_path: str, port: int):
     config = load_config(config_path)
     logger = setup_logging(config.logging, str(HERE))
 
-    # Validate api_key resolution at startup
+    # Validate api_key resolution at startup (lenient: warn on missing env vars)
+    skipped_providers = []
     for pname in config.providers_raw:
-        try:
-            config.get_provider(pname)
-        except ConfigError as e:
-            logger.error("Provider '%s': %s", pname, e)
-            sys.exit(1)
+        provider = config.get_provider(pname, strict=False)
+        if provider and provider["api_key"] is None:
+            skipped_providers.append(pname)
+            logger.warning(
+                "Provider '%s': api_key could not be resolved, "
+                "this provider will be unavailable until configured",
+                pname,
+            )
+    if skipped_providers:
+        logger.warning(
+            "Unavailable providers: %s (configure api_key to enable)",
+            ", ".join(skipped_providers),
+        )
 
     # Store on app state
     app.state.config = config

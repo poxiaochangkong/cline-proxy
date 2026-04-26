@@ -46,14 +46,26 @@ class Config:
     def providers_raw(self) -> dict:
         return self._data.get("providers", {})
 
-    def get_provider(self, name: str) -> Optional[dict]:
-        """Get resolved provider config (api_key already substituted)."""
+    def get_provider(self, name: str, strict: bool = False) -> Optional[dict]:
+        """
+        Get resolved provider config (api_key already substituted).
+
+        Args:
+            strict: If True, raise ConfigError on unresolved api_key.
+                    If False, return provider with api_key=None on failure.
+        """
         raw = self.providers_raw.get(name)
         if raw is None:
             return None
+        try:
+            api_key = self._resolve_api_key(raw["api_key"])
+        except ConfigError:
+            if strict:
+                raise
+            api_key = None
         return {
             "base_url": raw["base_url"].rstrip("/"),
-            "api_key": self._resolve_api_key(raw["api_key"]),
+            "api_key": api_key,
             "allowed_params": set(raw.get("allowed_params", [])),
             "models": raw.get("models", {}),
         }
