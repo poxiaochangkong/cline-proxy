@@ -12,8 +12,9 @@
 # 默认 provider（当 model 不在路由表中时的 fallback，留 null 则拒绝未知 model）
 default_provider: null
 
-# 端口：设为 0 则自动选择空闲端口
-port: 0
+# 固定端口（52340 是动态端口区间的端口，通常空闲）
+# 若被占用，启动时会自动寻找一个空闲端口并提示
+port: 52340
 
 # 日志配置
 logging:
