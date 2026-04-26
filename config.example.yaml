@@ -30,6 +30,8 @@ model_routing:
   deepseek-chat: deepseek
   deepseek-coder: deepseek
   deepseek-reasoner: deepseek
+  deepseek-v4-flash: deepseek
+  deepseek-v4-pro: deepseek
 
   # OpenAI
   gpt-4o: openai
@@ -56,7 +58,8 @@ providers:
     #   3. 文件引用: @file:./keys/deepseek.key
     api_key: ${DEEPSEEK_API_KEY}
     # 该 provider 允许的非核心参数白名单
-    # 核心参数（model, messages, stream, max_tokens, tools, tool_choice）
+    # 核心参数（model, messages, stream, max_tokens, tools, tool_choice,
+    #           reasoning_effort, thinking）
     # 始终保留，不受白名单影响
     allowed_params:
       - temperature
@@ -74,6 +77,15 @@ providers:
       deepseek-reasoner:
         temperature: 0.0
         max_tokens: 8192
+      # DeepSeek V4 with thinking mode
+      # thinking and reasoning_effort are CORE_PARAMS, passed through unconditionally
+      deepseek-v4-flash:
+        thinking:
+          type: enabled
+      deepseek-v4-pro:
+        reasoning_effort: high
+        thinking:
+          type: enabled
 
   # ------ OpenAI ------
   openai:

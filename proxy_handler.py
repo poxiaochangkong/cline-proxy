@@ -31,6 +31,8 @@ CORE_PARAMS = {
     "response_format",
     "stop",
     "n",
+    "reasoning_effort",
+    "thinking",
 }
 
 # Timeouts
