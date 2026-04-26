@@ -1,0 +1,111 @@
+# ============================================================
+# Cline Proxy - 面向 Cline 的本地 OpenAI-Compatible Gateway
+# ============================================================
+#
+# 使用方法：
+#   1. 复制为 config.yaml
+#   2. 填写 provider 的 api_key（支持环境变量 ${VAR_NAME} 或明文）
+#   3. python proxy.py
+#   4. 在 Cline 中设置 Base URL 为 http://localhost:<PORT>/v1
+#
+
+# 默认 provider（当 model 不在路由表中时的 fallback，留 null 则拒绝未知 model）
+default_provider: null
+
+# 端口：设为 0 则自动选择空闲端口
+port: 0
+
+# 日志配置
+logging:
+  level: INFO              # DEBUG / INFO / WARNING / ERROR
+  console: true            # 是否输出到控制台
+
+# --------------------------------------------------
+# 模型路由表
+# model 名称 → provider 名称
+# 请求中的 model 字段原样透传给上游，不做任何修改
+# --------------------------------------------------
+model_routing:
+  # DeepSeek
+  deepseek-chat: deepseek
+  deepseek-coder: deepseek
+  deepseek-reasoner: deepseek
+
+  # OpenAI
+  gpt-4o: openai
+  gpt-4o-mini: openai
+  o1-mini: openai
+  o1-preview: openai
+
+  # 小米
+  MiMo-7B-RL: xiaomi
+
+  # 自定义 provider
+  # your-model-name: your_provider
+
+# --------------------------------------------------
+# Provider 配置
+# --------------------------------------------------
+providers:
+  # ------ DeepSeek ------
+  deepseek:
+    base_url: https://api.deepseek.com/v1
+    # api_key 支持三种写法：
+    #   1. 明文:     sk-xxx
+    #   2. 环境变量: ${DEEPSEEK_API_KEY}
+    #   3. 文件引用: @file:./keys/deepseek.key
+    api_key: ${DEEPSEEK_API_KEY}
+    # 该 provider 允许的非核心参数白名单
+    # 核心参数（model, messages, stream, max_tokens, tools, tool_choice）
+    # 始终保留，不受白名单影响
+    allowed_params:
+      - temperature
+      - top_p
+      - frequency_penalty
+      - presence_penalty
+      - stop
+      - seed
+    models:
+      deepseek-chat:
+        temperature: 0.7
+        top_p: 0.9
+      deepseek-coder:
+        temperature: 0.3
+      deepseek-reasoner:
+        temperature: 0.0
+        max_tokens: 8192
+
+  # ------ OpenAI ------
+  openai:
+    base_url: https://api.openai.com/v1
+    api_key: ${OPENAI_API_KEY}
+    allowed_params:
+      - temperature
+      - top_p
+      - frequency_penalty
+      - presence_penalty
+      - top_k
+      - seed
+      - stop
+      - n
+      - logprobs
+      - top_logprobs
+    models:
+      gpt-4o:
+        temperature: 0.7
+      gpt-4o-mini: {}
+      o1-mini: {}
+      o1-preview: {}
+
+  # ------ 小米 ------
+  xiaomi:
+    base_url: https://api.xiaomi.com/v1
+    api_key: ${XIAOMI_API_KEY}
+    allowed_params:
+      - temperature
+      - top_k
+      - top_p
+    models:
+      MiMo-7B-RL:
+        temperature: 0.6
+        top_k: 50
