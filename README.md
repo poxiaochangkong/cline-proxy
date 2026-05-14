@@ -7,6 +7,7 @@
 1. **Cline 的 OpenAI Compatible 模式无法调节 top_p 等超参数** — 代理拦截请求后按需覆盖
 2. **切换 API Provider 需要反复填写 URL 和 API Key** — 配置统一管理，Cline 只需指向 localhost
 3. **不同 provider 对参数的容忍度不同** — 白名单机制过滤不支持的参数，避免上游报错
+4. **Cline 对 model 名的字符串匹配 bug** — [Cline 源码](https://github.com/cline/cline/blob/main/src/core/context/context-management/context-window-utils.ts) 中对包含 `"deepseek"` 的 model 名做了特殊处理（如 context window 回退到 128K），可能导致新模型配置不准确。Cline Proxy 允许使用**不含 `"deepseek"` 的别名**（如 `ds-v4-flash`）连接，代理在转发时自动覆写为正确的官方模型名发给上游 API，从而绕过 Cline 的字符串匹配逻辑。
 
 ## 工作原理
 
