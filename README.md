@@ -8,6 +8,7 @@
 2. **切换 API Provider 需要反复填写 URL 和 API Key** — 配置统一管理，Cline 只需指向 localhost
 3. **不同 provider 对参数的容忍度不同** — 白名单机制过滤不支持的参数，避免上游报错
 4. **Cline 对 model 名的字符串匹配 bug** — [Cline 源码](https://github.com/cline/cline/blob/main/src/core/context/context-management/context-window-utils.ts) 中对包含 `"deepseek"` 的 model 名做了特殊处理（如 context window 回退到 128K），可能导致新模型配置不准确。Cline Proxy 允许使用**不含 `"deepseek"` 的别名**（如 `ds-v4-flash`）连接，代理在转发时自动覆写为正确的官方模型名发给上游 API，从而绕过 Cline 的字符串匹配逻辑。
+5. **Cline 尚未支持新发布的模型**（如 GLM 5.2）— 通过本代理以 OpenAI Compatible 模式间接接入，配置好后即可在 Cline 中使用。
 
 ## 工作原理
 
@@ -24,7 +25,7 @@ Cline (base_url=http://localhost:{PORT}/v1)
    └───────────────────┘
         │
         ▼
-   实际 API (DeepSeek / OpenAI / 小米 / …)
+   实际 API (DeepSeek / OpenAI / 智谱 GLM / 小米 / …)
 ```
 
 ## 快速开始
@@ -64,6 +65,8 @@ providers:
     api_key: ${DEEPSEEK_API_KEY}   # 从环境变量读取
   openai:
     api_key: ${OPENAI_API_KEY}
+  glm:
+    api_key: sk-xxxxx              # 智谱 GLM（明文写入）
   xiaomi:
     api_key: sk-xxxxx              # 或直接写入
 ```
@@ -99,7 +102,7 @@ Set Base URL in Cline to:
 | API Provider | **OpenAI Compatible** |
 | Base URL | `http://localhost:52340/v1` （以实际输出为准） |
 | API Key | 任意值（代理会使用配置中的 key） |
-| Model ID | 路由表中的 model 名，如 `deepseek-chat`、`gpt-4o` |
+| Model ID | 路由表中的 model 名，如 `deepseek-chat`、`gpt-4o`、`glm-5.2` |
 
 ## 配置文件详解
 
@@ -109,6 +112,7 @@ Set Base URL in Cline to:
 model_routing:
   deepseek-chat: deepseek    # Cline 填 "deepseek-chat" → 路由到 deepseek provider
   gpt-4o: openai             # Cline 填 "gpt-4o" → 路由到 openai provider
+  glm-5.2: glm               # Cline 填 "glm-5.2" → 路由到 glm provider
   MiMo-7B-RL: xiaomi         # Cline 填 "MiMo-7B-RL" → 路由到 xiaomi provider
 ```
 
@@ -128,7 +132,7 @@ providers:
 ```
 
 以下核心参数**始终保留**，不受白名单影响：
-`model`, `messages`, `stream`, `max_tokens`, `tools`, `tool_choice`, `response_format`, `stop`, `n`
+`model`, `messages`, `stream`, `max_tokens`, `tools`, `tool_choice`, `response_format`, `stop`, `n`, `reasoning_effort`, `thinking`
 
 ### models — 超参数覆盖
 
@@ -139,6 +143,10 @@ models:
     top_p: 0.9             # Cline 未设置 top_p → 添加 top_p=0.9
   deepseek-coder:
     temperature: 0.3       # 只覆盖 temperature，其他参数保留 Cline 原始值
+  glm-5.2:
+    reasoning_effort: max  # GLM 5.2 思考模式：high 或 max
+    thinking:
+      type: enabled
 ```
 
 **原则**：只覆盖配置中显式出现的字段。未配置的字段保持 Cline 原始值。

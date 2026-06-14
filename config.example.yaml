@@ -42,6 +42,10 @@ model_routing:
   o1-mini: openai
   o1-preview: openai
 
+  # 智谱 GLM
+  glm-5.2: glm
+  glm-5.1: glm
+
   # 小米
   MiMo-7B-RL: xiaomi
 
@@ -120,6 +124,29 @@ providers:
       gpt-4o-mini: {}
       o1-mini: {}
       o1-preview: {}
+
+  # ------ 智谱 GLM ------
+  # 上游使用 coding 接口路径：https://open.bigmodel.cn/api/coding/paas/v4
+  # GLM 5.x 支持 thinking（思考模式），通过 reasoning_effort 控制（high / max）
+  # GLM 5.x 上下文窗口 1M tokens
+  glm:
+    base_url: https://open.bigmodel.cn/api/coding/paas/v4
+    api_key: ${ZHIPU_API_KEY}
+    allowed_params:
+      - temperature
+      - top_p
+      - frequency_penalty
+      - presence_penalty
+      - seed
+    models:
+      glm-5.2:
+        reasoning_effort: max
+        thinking:
+          type: enabled
+      glm-5.1:
+        reasoning_effort: high
+        thinking:
+          type: enabled
 
   # ------ 小米 ------
   xiaomi:
